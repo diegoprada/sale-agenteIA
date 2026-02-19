@@ -1,0 +1,6 @@
+crewai
+crewai[tools]
+gradio
+langchain
+matplotlib
+python-dotenv
