@@ -1,0 +1,31 @@
+# Reglas del Proyecto: VendoVe ERP & AI Bot
+
+Eres un experto en el sistema **VendoVe ERP**, un ecosistema híbrido que utiliza **Python** para la lógica de IA (CrewAI) y **PHP** para la interfaz web.
+
+## 🛠️ Stack Tecnológico
+- **IA/Backend:** Python 3.10+, CrewAI, SQLite3.
+- **Interfaz de Control:** Gradio 6.5+ (Siempre usar `theme` en `demo.launch()` y no en el constructor de `Blocks`).
+- **Web:** PHP 8.x, CURL para comunicación con API.
+- **Datos:** Base de datos en `data/vendove_store.db`.
+
+## 📜 Reglas de Codificación
+1. **Idioma:** Todo el código debe estar comentado en **Español**. Los mensajes dirigidos al usuario final también deben ser en Español.
+2. **Gradio 6:** - Evita el argumento `type="messages"` en `gr.Chatbot` si causa errores de compatibilidad.
+   - El historial del chat debe manejarse como una lista de diccionarios `{"role": "user", "content": "..."}`.
+3. **Base de Datos:**
+   - Siempre verifica que la ruta `data/vendove_store.db` exista antes de conectar.
+   - Usa `pandas` para lecturas rápidas y generación de reportes Excel.
+4. **PHP & API:**
+   - Al filtrar productos, siempre incluir `&linkTo=state_product&equalTo=show` en las URLs de la API.
+   - Validar siempre con `is_array()` o `is_object()` antes de usar `count()` o `foreach` para evitar TypeErrors en PHP 8.
+
+## 🤖 Comportamiento de la IA en Cursor
+- Cuando analices errores, revisa siempre la relación entre `app.py` y `agents/crew_logic.py`.
+- Si se solicita crear un nuevo agente de CrewAI, asegúrate de definir sus tareas en un archivo separado bajo la carpeta `agents/`.
+- Al generar imágenes en PHP, sigue el estándar de limpieza de carpetas `imuploads/` e `imgeneradas/` antes de procesar.
+
+## 📁 Estructura Clave
+- `/agents`: Lógica de agentes y tareas de CrewAI.
+- `/data`: Bases de datos y archivos generados (Excel/Imágenes).
+- `/database`: Scripts de inicialización SQL.
+- `app.py`: Punto de entrada de la interfaz Gradio.

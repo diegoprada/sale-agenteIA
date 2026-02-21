@@ -1,14 +1,18 @@
+"""
+Lógica de agentes CrewAI para VendoVe.
+- Asistente Virtual (chat): solo agente de ventas.
+- Reportes/analytics: se generan de forma automática en app.py, no desde el chat.
+"""
 from crewai import Agent, Task, Crew, Process
 from tools.sales_tools import ConsultarCatalogoTool, RegistrarVentaTool
-# Importamos solo la herramienta robusta que creamos
 from tools.analytics_tools import AnalyticsTool
 
-# 1. Instanciamos las herramientas
+# Herramientas
 tool_catalogo = ConsultarCatalogoTool()
 tool_venta = RegistrarVentaTool()
-tool_analytics = AnalyticsTool()  # Esta herramienta ya hace gráficas y Excel
+tool_analytics = AnalyticsTool()
 
-# 2. Definir Agentes
+# Agente de ventas: solo este atiende el chat (Asistente Virtual)
 agente_ventas = Agent(
     role='Vendedor VendoVe',
     goal='Ayudar a los clientes, consultar el catálogo y cerrar ventas.',
@@ -18,46 +22,38 @@ agente_ventas = Agent(
     allow_delegation=False
 )
 
-agente_analista = Agent(
-    role='Analista de Datos y Negocios',
-    goal='Generar reportes visuales y archivos Excel de las ventas realizadas.',
-    backstory='Experto en Business Intelligence. Te encargas de transformar datos brutos en informes ejecutivos profesionales.',
-    tools=[tool_analytics], # Ahora usa la herramienta robusta
-    verbose=True,
-    allow_delegation=False
-)
 
 def ejecutar_crew(mensaje_usuario):
-    # Tarea para el vendedor
+    """
+    Ejecuta solo el agente de ventas para el chat.
+    La respuesta que ve el usuario es siempre la del vendedor (no la del analista).
+    Los reportes se generan de forma automática en la pestaña Analytics.
+    """
     tarea_venta = Task(
         description=(
             f"Procesa la solicitud del usuario: '{mensaje_usuario}'. "
             "Si el usuario pregunta por productos, consulta el catálogo. "
             "Si el usuario quiere comprar, usa el ID del producto para registrar la venta. "
-            "Si el usuario pide un informe, reporte o gráfica, delega la interpretación al Analista."
+            "Responde de forma amable y clara. No generes reportes ni gráficas; eso se hace en otro panel."
         ),
         expected_output="Una respuesta amable y clara para el cliente con los resultados de la operación.",
         agent=agente_ventas
     )
 
-    # Tarea para el analista (se activa si se pide un reporte)
-    tarea_analisis = Task(
-        description=(
-            "Si la solicitud del usuario requiere un informe, gráfica o análisis, "
-            "utiliza la herramienta de analítica para generar el PNG y el Excel."
-        ),
-        expected_output="Confirmación de que los reportes gráficos y Excel han sido generados exitosamente.",
-        agent=agente_analista,
-        context=[tarea_venta] # El analista sabe qué pasó en la venta
-    )
-    
-    # Configuramos el Crew
     crew = Crew(
-        agents=[agente_ventas, agente_analista],
-        tasks=[tarea_venta, tarea_analisis],
-        process=Process.sequential # Se ejecutan en orden
+        agents=[agente_ventas],
+        tasks=[tarea_venta],
+        process=Process.sequential,
     )
-    
-    # kickoff devuelve un objeto CrewOutput, lo convertimos a string
+
     resultado = crew.kickoff()
-    return str(resultado)
+    # Con un solo agente, raw es la respuesta del vendedor
+    return resultado.raw if hasattr(resultado, 'raw') and resultado.raw else str(resultado)
+
+
+def generar_reportes_automatico():
+    """
+    Genera Excel y gráfica de ventas sin usar el chat.
+    Se llama al cargar la app y/o periódicamente desde la pestaña Analytics.
+    """
+    return tool_analytics._run("")

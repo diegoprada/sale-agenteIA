@@ -12,7 +12,7 @@ class ConsultarCatalogoTool(BaseTool):
     def _run(self, query: str = "") -> str:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        sql = "SELECT id_product, name_product, price_product, stock_product FROM products WHERE state_product != 'hide' AND stock_product > 0"
+        sql = "SELECT id_product, name_product, price_product, stock_product FROM products WHERE state_product = 'show' AND stock_product > 0"
         cursor.execute(sql)
         items = cursor.fetchall()
         conn.close()
