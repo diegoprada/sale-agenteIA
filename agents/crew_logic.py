@@ -3,14 +3,20 @@ Lógica de agentes CrewAI para VendoVe.
 - Asistente Virtual (chat): solo agente de ventas.
 - Reportes/analytics: se generan de forma automática en app.py, no desde el chat.
 """
-from crewai import Agent, Task, Crew, Process
+import os
+from crewai import Agent, Task, Crew, Process, LLM
 from tools.sales_tools import ConsultarCatalogoTool, RegistrarVentaTool
 from tools.analytics_tools import AnalyticsTool
 
-# Herramientas
+llm = LLM(
+    model="gemini/gemini-2.5-flash",
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 tool_catalogo = ConsultarCatalogoTool()
 tool_venta = RegistrarVentaTool()
 tool_analytics = AnalyticsTool()
+
 
 # Agente de ventas: solo este atiende el chat (Asistente Virtual)
 agente_ventas = Agent(
@@ -18,6 +24,7 @@ agente_ventas = Agent(
     goal='Ayudar a los clientes, consultar el catálogo y cerrar ventas.',
     backstory='Asesor senior de VendoVe. Eres amable y eficiente. Si un cliente pregunta qué productos hay, usas el catálogo.',
     tools=[tool_catalogo, tool_venta],
+    llm=llm,
     verbose=True,
     allow_delegation=False
 )

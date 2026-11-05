@@ -1,5 +1,6 @@
 crewai
 crewai[tools]
+crewai[google-genai]
 gradio
 langchain
 matplotlib
